@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 let modelUser = require('../schemas/users');
+let bcrypt = require('bcrypt');
 
 // GET all users (không lấy user đã xóa mềm)
 // localhost:3000/api/v1/users
@@ -71,6 +72,13 @@ router.post('/', async function(req, res, next) {
 router.put('/:id', async function(req, res, next) {
   try {
     let id = req.params.id;
+    
+    // Nếu có update password, hash nó trước
+    if (req.body.password) {
+      const salt = await bcrypt.genSalt(10);
+      req.body.password = await bcrypt.hash(req.body.password, salt);
+    }
+    
     let result = await modelUser.findByIdAndUpdate(
       id, 
       req.body, 
